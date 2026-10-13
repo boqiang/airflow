@@ -127,6 +127,7 @@ if TYPE_CHECKING:
             RetryPolicy as RetryPolicy,
             RetryRule as RetryRule,
         )
+    from airflow.sdk import ResumableJobMixin as ResumableJobMixin
     from airflow.sdk.execution_time.context import (
         AIRFLOW_VAR_NAME_FORMAT_MAPPING as AIRFLOW_VAR_NAME_FORMAT_MAPPING,
         context_to_airflow_vars as context_to_airflow_vars,
@@ -371,6 +372,13 @@ _AIRFLOW_3_3_ONLY_RETRY_POLICIES: dict[str, str | tuple[str, ...]] = {
 
 if AIRFLOW_V_3_3_PLUS:
     _IMPORT_MAP.update(_AIRFLOW_3_3_ONLY_RETRY_POLICIES)
+
+# ResumableJobMixin (AIP-103) arrived in Airflow 3.3. The SDK is tried first; below 3.3 the stand-in
+# submits a new job on every try, so a durable operator still runs there, just without resuming.
+_IMPORT_MAP["ResumableJobMixin"] = (
+    "airflow.sdk",
+    "airflow.providers.common.compat._resumable_job_mixin",
+)
 
 # Module map: module_name -> module_path(s)
 # For entire modules that have been moved (e.g., timezone)
